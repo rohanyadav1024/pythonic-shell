@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 
 def read_cli():
     sys.stdout.write("$ ")
@@ -39,10 +40,14 @@ def check_command_type(args):
 
     return
 
-def execute_command(prompt):
-    is_executable, executable_path = check_is_executable(prompt)
+def execute_command(command, args):
+    is_executable, executable_path = check_is_executable(command)
     if is_executable:
-        os.execv(executable_path, [prompt])
+        subprocess.run([command] + args)
+        # os.execv(executable_path, [command] + args)
+        return
+    
+    print(f"{command}: command not found")
 
 def repl_cli():
     prompt = read_cli()
@@ -58,9 +63,8 @@ def repl_cli():
             check_command_type(args)
             return
         case _:
-            execute_command(prompt)
-
-    print(f"{prompt}: command not found")
+            execute_command(command, args)
+            return
 
 def main():
     while True:
