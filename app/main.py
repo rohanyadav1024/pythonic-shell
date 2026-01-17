@@ -1,4 +1,5 @@
 import sys
+import os
 
 def read_cli():
     sys.stdout.write("$ ")
@@ -11,7 +12,21 @@ def echo_command(args):
 def list_builtins_commands():
     return ["echo", "exit", "type"]
 
-def check_builtin_type(args):
+def lookup_executable(command):
+    paths = os.getenv("PATH", "").split(os.pathsep)
+
+    is_executable = False
+    for path in paths:
+        fully_qualified_path = os.path.join(path, command)
+        if os.path.isfile(fully_qualified_path) and os.access(fully_qualified_path, os.X_OK):
+            print(f"{command} is {fully_qualified_path}")
+            is_executable = True
+            break
+
+    if not is_executable:
+        print(f"{command} not found")
+
+def check_command_type(args):
     if not args:
         print("type: missing argument")
         return
@@ -20,22 +35,21 @@ def check_builtin_type(args):
     if command in list_builtins_commands():
         print(f"{command} is a shell builtin")
     else:
-        print(f"{command} not found")
+        lookup_executable(command)
     return
 
 def repl_cli():
     prompt = read_cli()
-
-    if prompt == "exit":
-        sys.exit()
 
     command, args = prompt.split()[0], prompt.split()[1:]
     match command:
         case "echo":
             echo_command(args)
             return
+        case "exit":
+            sys.exit()
         case "type":
-            check_builtin_type(args)
+            check_command_type(args)
             return
         case _:
             pass
