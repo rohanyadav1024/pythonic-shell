@@ -12,19 +12,15 @@ def echo_command(args):
 def list_builtins_commands():
     return ["echo", "exit", "type"]
 
-def lookup_executable(command):
+def check_is_executable(command):
     paths = os.getenv("PATH", "").split(os.pathsep)
 
-    is_executable = False
     for path in paths:
         fully_qualified_path = os.path.join(path, command)
         if os.path.isfile(fully_qualified_path) and os.access(fully_qualified_path, os.X_OK):
-            print(f"{command} is {fully_qualified_path}")
-            is_executable = True
-            break
+            return True, fully_qualified_path
 
-    if not is_executable:
-        print(f"{command} not found")
+    return False, None
 
 def check_command_type(args):
     if not args:
@@ -35,8 +31,18 @@ def check_command_type(args):
     if command in list_builtins_commands():
         print(f"{command} is a shell builtin")
     else:
-        lookup_executable(command)
+        is_executable, executable_path = check_is_executable(command)
+        if is_executable:
+            print(f"{command} is {executable_path}")
+        else:
+            print(f"{command} not found")
+
     return
+
+def execute_command(prompt):
+    is_executable, executable_path = check_is_executable(prompt)
+    if is_executable:
+        os.execv(executable_path, [prompt])
 
 def repl_cli():
     prompt = read_cli()
@@ -52,7 +58,7 @@ def repl_cli():
             check_command_type(args)
             return
         case _:
-            pass
+            execute_command(prompt)
 
     print(f"{prompt}: command not found")
 
