@@ -8,6 +8,21 @@ def read_cli():
 def echo_command(args):
     print(" ".join(args))
 
+def list_builtins_commands():
+    return ["echo", "exit", "type"]
+
+def check_builtin_type(args):
+    if not args:
+        print("type: missing argument")
+        return
+
+    command = args[0]
+    if command in list_builtins_commands():
+        print(f"{command} is a shell builtin")
+    else:
+        print(f"{command} not found")
+    return
+
 def repl_cli():
     prompt = read_cli()
 
@@ -18,6 +33,9 @@ def repl_cli():
     match command:
         case "echo":
             echo_command(args)
+            return
+        case "type":
+            check_builtin_type(args)
             return
         case _:
             pass
