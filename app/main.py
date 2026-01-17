@@ -1,13 +1,13 @@
 import sys
 
+def handle_cli():
+    sys.stdout.write("$ ")
+    prompt = input()
+    print(f"{prompt}: command not found")
 
 def main():
-    # TODO: Uncomment the code below to pass the first stage
-    # sys.stdout.write("$ ")
-    sys.stdout.write("$ ")
-    command = input()
-    print(f"{command}: command not found")
-
+    while True:
+        handle_cli()
 
 if __name__ == "__main__":
     main()
