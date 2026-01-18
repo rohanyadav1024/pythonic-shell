@@ -13,9 +13,19 @@ def split_preserve_quotes(s):
     result = []
     current = ""
     in_quotes = False
+    backslash_escape = False
     quote_type = BLANK_STRING
 
     for char in s:
+        if backslash_escape:
+            backslash_escape = False
+            current += char
+            continue
+
+        if char == "\\" and not in_quotes:
+            backslash_escape = True
+            continue
+
         if char in (SINGLE_QUOTE, DOUBLE_QUOTE):
             if not in_quotes:
                 in_quotes = not in_quotes # Entering quotes: Assigning True
@@ -37,28 +47,6 @@ def split_preserve_quotes(s):
         result.append(current)
 
     return result
-
-# def split_preserve_quotes(s):
-#     """Split string while preserving quoted content as single elements."""
-#     # return shlex.split(s) # Alternative using shlex
-#     result = []
-#     current = ""
-#     in_quotes = False
-
-#     for char in s:
-#         if char == "'":
-#            in_quotes = not in_quotes
-#         elif char == " " and not in_quotes:
-#             if current:
-#                 result.append(current)
-#                 current = ""
-#         else:
-#             current += char
-
-#     if current:
-#         result.append(current)
-
-#     return result
 
 def read_cli():
     sys.stdout.write("$ ")
