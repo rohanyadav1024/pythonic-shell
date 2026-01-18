@@ -14,6 +14,7 @@ def split_preserve_quotes(s):
     current = ""
     in_quotes = False
     backslash_escape = False
+    backslash_escape_inside_double_quotes = False
     quote_type = BLANK_STRING
 
     for char in s:
@@ -22,9 +23,32 @@ def split_preserve_quotes(s):
             current += char
             continue
 
-        if char == "\\" and not in_quotes:
-            backslash_escape = True
+        if backslash_escape_inside_double_quotes:
+            backslash_escape_inside_double_quotes = False
+            if char in (DOUBLE_QUOTE, "\\"):
+                current += char
+            else:
+                current += "\\" + char
             continue
+
+        # if char == "\\" and not in_quotes:
+        #     backslash_escape = True
+        #     continue
+
+        if char == "\\":
+            if not in_quotes:
+                backslash_escape = True
+                continue
+            elif in_quotes and quote_type == DOUBLE_QUOTE:
+                backslash_escape_inside_double_quotes = True
+                continue
+
+            # if in_quotes and quote_type == DOUBLE_QUOTE:
+            #     backslash_escape_inside_double_quotes = True
+            #     continue
+            # else:
+            #     backslash_escape = True
+            # continue
 
         if char in (SINGLE_QUOTE, DOUBLE_QUOTE):
             if not in_quotes:
