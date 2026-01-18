@@ -1,6 +1,29 @@
 import sys
 import os
 import subprocess
+import shlex
+
+def split_preserve_quotes(s):
+    """Split string while preserving quoted content as single elements."""
+    # return shlex.split(s) # Alternative using shlex
+    result = []
+    current = ""
+    in_quotes = False
+
+    for char in s:
+        if char == "'":
+           in_quotes = not in_quotes
+        elif char == " " and not in_quotes:
+            if current:
+                result.append(current)
+                current = ""
+        else:
+            current += char
+
+    if current:
+        result.append(current)
+
+    return result
 
 def read_cli():
     sys.stdout.write("$ ")
@@ -52,7 +75,8 @@ def execute_command(command, args):
 def repl_cli():
     prompt = read_cli()
 
-    command, args = prompt.split()[0], prompt.split()[1:]
+    parts = split_preserve_quotes(prompt)
+    command, args = parts[0], parts[1:]
     match command:
         case "echo":
             echo_command(args)
