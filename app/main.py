@@ -3,16 +3,29 @@ import os
 import subprocess
 import shlex
 
+SINGLE_QUOTE = "'"
+DOUBLE_QUOTE = '"'
+BLANK_STRING = ""
+
 def split_preserve_quotes(s):
     """Split string while preserving quoted content as single elements."""
     # return shlex.split(s) # Alternative using shlex
     result = []
     current = ""
     in_quotes = False
+    quote_type = BLANK_STRING
 
     for char in s:
-        if char == "'":
-           in_quotes = not in_quotes
+        if char in (SINGLE_QUOTE, DOUBLE_QUOTE):
+            if not in_quotes:
+                in_quotes = not in_quotes # Entering quotes: Assigning True
+                quote_type = char
+            elif quote_type == char:
+                in_quotes = not in_quotes # Exiting quotes: Assigning False
+                quote_type = BLANK_STRING
+            else:
+                current += char
+
         elif char == " " and not in_quotes:
             if current:
                 result.append(current)
@@ -24,6 +37,28 @@ def split_preserve_quotes(s):
         result.append(current)
 
     return result
+
+# def split_preserve_quotes(s):
+#     """Split string while preserving quoted content as single elements."""
+#     # return shlex.split(s) # Alternative using shlex
+#     result = []
+#     current = ""
+#     in_quotes = False
+
+#     for char in s:
+#         if char == "'":
+#            in_quotes = not in_quotes
+#         elif char == " " and not in_quotes:
+#             if current:
+#                 result.append(current)
+#                 current = ""
+#         else:
+#             current += char
+
+#     if current:
+#         result.append(current)
+
+#     return result
 
 def read_cli():
     sys.stdout.write("$ ")
