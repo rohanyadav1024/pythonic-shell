@@ -7,6 +7,10 @@ SINGLE_QUOTE = "'"
 DOUBLE_QUOTE = '"'
 BLANK_STRING = ""
 
+REDIRECTION_OPERATORS = (">", "1>", "2>")
+REDIRECTION_MODE_STDOUT = 'stdout'
+REDIRECTION_MODE_STDERR = 'stderr'
+
 def split_preserve_quotes(s):
     """Split string while preserving quoted content as single elements."""
     # return shlex.split(s) # Alternative using shlex
@@ -107,10 +111,22 @@ def check_command_type(args):
     return
 
 def redirect_standard_output(command: str, args: list):
-    if not any(arg in args for arg in (">", "1>")):
+    # if not any(arg in args for arg in (">", "1>", "2>")):
+    #     return
+    redirection_mode = None
+        
+    redirection_operator_index = -1
+    if ">" in args:
+        redirection_operator_index = args.index(">")
+        redirection_mode = REDIRECTION_MODE_STDOUT
+    elif "1>" in args:
+        redirection_operator_index = args.index("1>")
+        redirection_mode = REDIRECTION_MODE_STDOUT
+    elif "2>" in args:
+        redirection_operator_index = args.index("2>")
+        redirection_mode = REDIRECTION_MODE_STDERR
+    else:
         return
-    
-    redirection_operator_index = args.index(">") if ">" in args else args.index("1>")
 
     if redirection_operator_index == len(args) - 1:
         # No file specified for redirection
@@ -125,13 +141,19 @@ def redirect_standard_output(command: str, args: list):
 
     # write to the destination file
     with open(redirection_file_destination, "w") as f:
-        subprocess.run([command] + args, stdout=f)
+        if redirection_mode == REDIRECTION_MODE_STDERR:
+            subprocess.run([command] + args, stderr=f)
+        elif redirection_mode == REDIRECTION_MODE_STDOUT:
+            subprocess.run([command] + args, stdout=f)
 
 def execute_command(command, args):
     is_executable, executable_path = check_is_executable(command)
     if is_executable:
-        if any(arg in args for arg in (">", "1>")):
+        if any(arg in args for arg in REDIRECTION_OPERATORS):
             redirect_standard_output(command, args)
+
+        # elif "2>" in args:
+        #     redirect_error_output(command, args)
 
         else:
             subprocess.run([command] + args)
