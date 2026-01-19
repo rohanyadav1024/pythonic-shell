@@ -31,10 +31,6 @@ def split_preserve_quotes(s):
                 current += "\\" + char
             continue
 
-        # if char == "\\" and not in_quotes:
-        #     backslash_escape = True
-        #     continue
-
         if char == "\\":
             if not in_quotes:
                 backslash_escape = True
@@ -77,8 +73,8 @@ def read_cli():
     prompt = input()
     return prompt
 
-def echo_command(args):
-    print(" ".join(args))
+# def echo_command(args):
+#     print(" ".join(args))
 
 def list_builtins_commands():
     return ["echo", "exit", "type"]
@@ -110,10 +106,36 @@ def check_command_type(args):
 
     return
 
+def redirect_standard_output(command: str, args: list):
+    if not any(arg in args for arg in (">", "1>")):
+        return
+    
+    redirection_operator_index = args.index(">") if ">" in args else args.index("1>")
+
+    if redirection_operator_index == len(args) - 1:
+        # No file specified for redirection
+        print("syntax error near unexpected token `newline'")
+        return
+    
+    redirection_file_destination = args[redirection_operator_index + 1]
+    args.pop(redirection_operator_index) # Remove the redirection operator
+    # Remove the file destination
+    # As after poping operator, the file destination shifts to the same index
+    args.pop(redirection_operator_index)
+
+    # write to the destination file
+    with open(redirection_file_destination, "w") as f:
+        subprocess.run([command] + args, stdout=f)
+
 def execute_command(command, args):
     is_executable, executable_path = check_is_executable(command)
     if is_executable:
-        subprocess.run([command] + args)
+        if any(arg in args for arg in (">", "1>")):
+            redirect_standard_output(command, args)
+
+        else:
+            subprocess.run([command] + args)
+        # alternatively, we can use os.execv to replace the current process
         # os.execv(executable_path, [command] + args)
         return
     
@@ -125,9 +147,11 @@ def repl_cli():
     parts = split_preserve_quotes(prompt)
     command, args = parts[0], parts[1:]
     match command:
-        case "echo":
-            echo_command(args)
-            return
+        # case "echo": 
+        # No need to explicitly handle echo here,
+        # execute_command will take care of it
+        #     echo_command(args)
+        #     return
         case "exit":
             sys.exit()
         case "type":
