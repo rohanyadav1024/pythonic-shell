@@ -7,9 +7,11 @@ SINGLE_QUOTE = "'"
 DOUBLE_QUOTE = '"'
 BLANK_STRING = ""
 
-REDIRECTION_OPERATORS = (">", "1>", "2>")
+REDIRECTION_OPERATORS = (">", "1>", "2>", ">>", "1>>", "2>>")
 REDIRECTION_MODE_STDOUT = 'stdout'
 REDIRECTION_MODE_STDERR = 'stderr'
+REDIRECTION_MODE_STDOUT_APPEND = 'stdout_append'
+REDIRECTION_MODE_STDERR_APPEND = 'stderr_append'
 
 def split_preserve_quotes(s):
     """Split string while preserving quoted content as single elements."""
@@ -125,6 +127,15 @@ def redirect_standard_output(command: str, args: list):
     elif "2>" in args:
         redirection_operator_index = args.index("2>")
         redirection_mode = REDIRECTION_MODE_STDERR
+    elif ">>" in args:
+        redirection_operator_index = args.index(">>")
+        redirection_mode = REDIRECTION_MODE_STDOUT_APPEND
+    elif "1>>" in args:
+        redirection_operator_index = args.index("1>>")
+        redirection_mode = REDIRECTION_MODE_STDOUT_APPEND
+    elif "2>>" in args:
+        redirection_operator_index = args.index("2>>")
+        redirection_mode = REDIRECTION_MODE_STDERR_APPEND
     else:
         return
 
@@ -140,10 +151,15 @@ def redirect_standard_output(command: str, args: list):
     args.pop(redirection_operator_index)
 
     # write to the destination file
-    with open(redirection_file_destination, "w") as f:
-        if redirection_mode == REDIRECTION_MODE_STDERR:
+    if redirection_mode in (REDIRECTION_MODE_STDOUT_APPEND, REDIRECTION_MODE_STDERR_APPEND):
+        write_mode = "a"
+    else:
+        write_mode = "w"
+
+    with open(redirection_file_destination, mode=write_mode) as f:
+        if redirection_mode in (REDIRECTION_MODE_STDERR, REDIRECTION_MODE_STDERR_APPEND):
             subprocess.run([command] + args, stderr=f)
-        elif redirection_mode == REDIRECTION_MODE_STDOUT:
+        elif redirection_mode in (REDIRECTION_MODE_STDOUT, REDIRECTION_MODE_STDOUT_APPEND):
             subprocess.run([command] + args, stdout=f)
 
 def execute_command(command, args):
