@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import shlex
+import readline
 
 SINGLE_QUOTE = "'"
 DOUBLE_QUOTE = '"'
@@ -168,9 +169,6 @@ def execute_command(command, args):
         if any(arg in args for arg in REDIRECTION_OPERATORS):
             redirect_standard_output(command, args)
 
-        # elif "2>" in args:
-        #     redirect_error_output(command, args)
-
         else:
             subprocess.run([command] + args)
         # alternatively, we can use os.execv to replace the current process
@@ -178,6 +176,25 @@ def execute_command(command, args):
         return
     
     print(f"{command}: command not found")
+
+def text_completion(text, state):
+    # ToDO: Implement effiecient fetching of commands with caching
+    commands = list_builtins_commands()
+
+    # Add executables from PATH
+    paths = os.getenv("PATH", "").split(os.pathsep)
+    for path in paths:
+        if os.path.isdir(path):
+            for item in os.listdir(path):
+                item_path = os.path.join(path, item)
+                if os.path.isfile(item_path) and os.access(item_path, os.X_OK):
+                    commands.append(item)
+
+    matches = [cmd for cmd in commands if cmd.startswith(text)]
+    if state < len(matches):
+        return matches[state] + " "
+    else:
+        return None
 
 def repl_cli():
     prompt = read_cli()
@@ -200,6 +217,9 @@ def repl_cli():
             return
 
 def main():
+    readline.set_completer(text_completion) # Set the custom completion function
+    readline.parse_and_bind("tab: complete") # Enable tab completion
+
     while True:
         repl_cli()
 
