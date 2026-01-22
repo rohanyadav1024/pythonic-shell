@@ -14,6 +14,8 @@ REDIRECTION_MODE_STDERR = 'stderr'
 REDIRECTION_MODE_STDOUT_APPEND = 'stdout_append'
 REDIRECTION_MODE_STDERR_APPEND = 'stderr_append'
 
+commands = []
+
 def split_preserve_quotes(s):
     """Split string while preserving quoted content as single elements."""
     # return shlex.split(s) # Alternative using shlex
@@ -76,8 +78,8 @@ def split_preserve_quotes(s):
     return result
 
 def read_cli():
-    sys.stdout.write("$ ")
-    prompt = input()
+    # sys.stdout.write("$ ")
+    prompt = input("$ ")
     return prompt
 
 # def echo_command(args):
@@ -179,21 +181,33 @@ def execute_command(command, args):
 
 def text_completion(text, state):
     # ToDO: Implement effiecient fetching of commands with caching
-    commands = list_builtins_commands()
+
+    global commands
 
     # Add executables from PATH
-    paths = os.getenv("PATH", "").split(os.pathsep)
-    for path in paths:
-        if os.path.isdir(path):
-            for item in os.listdir(path):
-                item_path = os.path.join(path, item)
-                if os.path.isfile(item_path) and os.access(item_path, os.X_OK):
-                    commands.append(item)
+    # paths = os.getenv("PATH", "").split(os.pathsep)
+    # for path in paths:
+    #     if os.path.isdir(path):
+    #         for item in os.listdir(path):
+    #             item_path = os.path.join(path, item)
+    #             if os.path.isfile(item_path) and os.access(item_path, os.X_OK):
+    #                 commands.append(item)
 
     matches = [cmd for cmd in commands if cmd.startswith(text)]
+
+    # print(f"TEXT: {text}, STATE: {state}, MATCHES: {matches}")
+
     if state < len(matches):
-        return matches[state] + " "
+        match = matches[state]
+        # Add trailing space ONLY if this is the sole match
+        if len(matches) == 1:
+            # print(f"RETURNING: '{match} ' (with space)")
+            return match + " "
+        else:
+            # print(f"RETURNING: '{match}' (no space, multiple matches)")
+            return match
     else:
+        # print("RETURNING: None")
         return None
 
 def repl_cli():
@@ -215,8 +229,27 @@ def repl_cli():
         case _:
             execute_command(command, args)
             return
+        
+def initializer():
+    global commands
+    commands = []
+    # commands = list_builtins_commands()
+
+    # Add executables from PATH
+    paths = os.getenv("PATH", "").split(os.pathsep)
+    for path in paths:
+        if os.path.isdir(path):
+            for item in os.listdir(path):
+                item_path = os.path.join(path, item)
+                if os.path.isfile(item_path) and os.access(item_path, os.X_OK):
+                    commands.append(item)
+
+    commands = list(set(commands + list_builtins_commands()))
 
 def main():
+    initializer()
+    # print("Welcome to the Python Shell!")
+    # print(commands)
     readline.set_completer(text_completion) # Set the custom completion function
     readline.parse_and_bind("tab: complete") # Enable tab completion
 
