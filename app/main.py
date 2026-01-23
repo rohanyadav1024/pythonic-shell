@@ -183,19 +183,7 @@ def text_completion(text, state):
     # ToDO: Implement effiecient fetching of commands with caching
 
     global commands
-
-    # Add executables from PATH
-    # paths = os.getenv("PATH", "").split(os.pathsep)
-    # for path in paths:
-    #     if os.path.isdir(path):
-    #         for item in os.listdir(path):
-    #             item_path = os.path.join(path, item)
-    #             if os.path.isfile(item_path) and os.access(item_path, os.X_OK):
-    #                 commands.append(item)
-
     matches = [cmd for cmd in commands if cmd.startswith(text)]
-
-    # print(f"TEXT: {text}, STATE: {state}, MATCHES: {matches}")
 
     if state < len(matches):
         match = matches[state]
@@ -210,8 +198,64 @@ def text_completion(text, state):
         # print("RETURNING: None")
         return None
 
+class PipelineParser:
+    @staticmethod
+    def parse(pipeline_str: str):
+        for cmd in pipeline_str.split("|"):
+            yield cmd.strip()
+
+    @staticmethod
+    def validate_commands(commands: list):
+        for command in commands:
+            parts = split_preserve_quotes(command)
+            cmd_name = parts[0]
+            is_executable, _ = check_is_executable(cmd_name)
+            if not is_executable:
+                print(f"{cmd_name}: command not found")
+                return False
+        return True
+
+def execute_pipeline_commands(prompt: str):
+
+    commands = list(PipelineParser.parse(prompt))
+    if not PipelineParser.validate_commands(commands):
+        return
+
+    processes = []
+    previous_process = None
+
+    for i in range(len(commands)):
+        parts_of_command = split_preserve_quotes(commands[i])
+        is_executable, executable_path = check_is_executable(parts_of_command[0])
+        if not is_executable:
+            print(f"{parts_of_command[0]}: command not found")
+            return
+
+        executable_command = [executable_path] + parts_of_command[1:]
+        if i == 0:
+            # First command
+            process = subprocess.Popen(executable_command, stdout=subprocess.PIPE)
+        elif i == len(commands) - 1:
+            # Last command
+            process = subprocess.Popen(executable_command, stdin=previous_process.stdout, stdout=sys.stdout)
+        else:
+            # Intermediate command
+            process = subprocess.Popen(executable_command, stdin=previous_process.stdout, stdout=subprocess.PIPE)
+
+        processes.append(process)
+        previous_process = process
+
+    # Wait for all processes to complete
+    for process in processes:
+        process.wait()
+
 def repl_cli():
     prompt = read_cli()
+
+    # for pipeline commands
+    if "|" in prompt:
+        execute_pipeline_commands(prompt)
+        return
 
     parts = split_preserve_quotes(prompt)
     command, args = parts[0], parts[1:]
