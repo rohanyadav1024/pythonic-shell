@@ -82,8 +82,10 @@ def read_cli():
     prompt = input("$ ")
     return prompt
 
-# def echo_command(args):
-#     print(" ".join(args))
+def echo_command(args, return_output=False):
+    if return_output:
+        return " ".join(args)
+    print(" ".join(args))
 
 def list_builtins_commands():
     return ["echo", "exit", "type"]
@@ -98,26 +100,26 @@ def check_is_executable(command):
 
     return False, None
 
-def check_command_type(args):
+def check_command_type(args, return_output=False):
     if not args:
         print("type: missing argument")
         return
 
     command = args[0]
     if command in list_builtins_commands():
-        print(f"{command} is a shell builtin")
+        output = f"{command} is a shell builtin"
     else:
         is_executable, executable_path = check_is_executable(command)
         if is_executable:
-            print(f"{command} is {executable_path}")
+            output = f"{command} is {executable_path}"
         else:
-            print(f"{command} not found")
+            output = f"{command} not found"
 
-    return
+    if return_output:
+        return output
+    print(output)
 
 def redirect_standard_output(command: str, args: list):
-    # if not any(arg in args for arg in (">", "1>", "2>")):
-    #     return
     redirection_mode = None
         
     redirection_operator_index = -1
@@ -209,11 +211,24 @@ class PipelineParser:
         for command in commands:
             parts = split_preserve_quotes(command)
             cmd_name = parts[0]
+
+            if cmd_name in list_builtins_commands():
+                continue
+
             is_executable, _ = check_is_executable(cmd_name)
             if not is_executable:
                 print(f"{cmd_name}: command not found")
                 return False
         return True
+
+def execute_builtin_in_pipeline(command: str, args):
+    match command:
+        case "echo":
+            return echo_command(args, return_output=True)
+        case "type":
+            return check_command_type(args, return_output=True)
+        case _:
+            return None
 
 def execute_pipeline_commands(prompt: str):
 
@@ -226,12 +241,27 @@ def execute_pipeline_commands(prompt: str):
 
     for i in range(len(commands)):
         parts_of_command = split_preserve_quotes(commands[i])
-        is_executable, executable_path = check_is_executable(parts_of_command[0])
-        if not is_executable:
-            print(f"{parts_of_command[0]}: command not found")
-            return
 
-        executable_command = [executable_path] + parts_of_command[1:]
+        # implement support for built-in commands in pipeline
+        command, args = parts_of_command[0], parts_of_command[1:]
+
+        if command in list_builtins_commands():
+            builtin_output = execute_builtin_in_pipeline(command, args)
+            if builtin_output is not None:
+                executable_command = ["echo", builtin_output]
+                # executable_command = ["echo", "-n", builtin_output]
+            else:
+                print(f"{command}: command not found")
+                return
+
+        else:
+            is_executable, executable_path = check_is_executable(command)
+            if not is_executable:
+                print(f"{command}: command not found")
+                return
+
+            executable_command = [executable_path] + args
+
         if i == 0:
             # First command
             process = subprocess.Popen(executable_command, stdout=subprocess.PIPE)
@@ -241,6 +271,10 @@ def execute_pipeline_commands(prompt: str):
         else:
             # Intermediate command
             process = subprocess.Popen(executable_command, stdin=previous_process.stdout, stdout=subprocess.PIPE)
+
+        # Close previous process's stdout in parent (important for EOF!)
+        if previous_process:
+            previous_process.stdout.close()
 
         processes.append(process)
         previous_process = process
@@ -263,8 +297,8 @@ def repl_cli():
         # case "echo": 
         # No need to explicitly handle echo here,
         # execute_command will take care of it
-        #     echo_command(args)
-        #     return
+            # echo_command(args)
+            # return
         case "exit":
             sys.exit()
         case "type":
@@ -273,7 +307,7 @@ def repl_cli():
         case _:
             execute_command(command, args)
             return
-        
+
 def initializer():
     global commands
     commands = []
