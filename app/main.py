@@ -214,6 +214,43 @@ class PipelineParser:
                 return False
         return True
 
+def manage_history_command(args):
+    file_mode = None
+    limit = None
+    if args:
+        if args[0] == "-r":
+            # read history from file
+            if args[1] is None:
+                print("history: missing file operand")
+                return
+            
+            file_path = args[1]
+            history.load_history_from_file(file_path)
+            return
+        elif args[0] == "-w":
+            # write history to the file
+            if args[1] is None:
+                print("history: missing file operand")
+                return
+            
+            file_path = args[1]
+            history.write_history_to_file(file_path)
+            return
+        elif args[0] == "-a":
+            # write history to the file
+            if args[1] is None:
+                print("history: missing file operand")
+                return
+            
+            file_path = args[1]
+            history.append_command_to_file(file_path)
+            return
+        elif args[0].isdigit():
+            limit = int(args[0])
+
+    # Default: show entire history if none other
+    history.show_history(limit)
+
 def execute_builtin_in_pipeline(command: str, args):
     match command:
         case "echo":
@@ -300,12 +337,7 @@ def repl_cli():
             check_command_type(args)
             return
         case "history":
-            # global history
-            limit = None
-            if args and args[0].isdigit():
-                limit = int(args[0])
-
-            history.show_history(limit)
+            manage_history_command(args)
 
             return
         case _:

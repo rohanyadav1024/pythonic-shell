@@ -1,3 +1,6 @@
-write to the file first
-append
-jv
+command a
+history
+history -w /Users/rohanyadav/LearnSpace/codecrafters-shell-python/file.txt
+wqjefv
+weofuweg
+history -a /Users/rohanyadav/LearnSpace/codecrafters-shell-python/file.txt

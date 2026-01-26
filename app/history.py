@@ -1,4 +1,5 @@
 class History:
+    # TODO: Implement custom UP and DOWN arrow navigation through history
     def __init__(self):
         self.history_file_commands = []
         self.current_session_commands = []
@@ -8,10 +9,10 @@ class History:
     def add_to_history(self, command):
         if command.strip() == "":
             return
-        
+
         if command in self.distinct_commands:
             return
-        
+
         self.distinct_commands.add(command)
         self.current_session_commands.append(command)
 
@@ -28,3 +29,34 @@ class History:
 
     def get_command_from_history(self, index):
         pass
+
+    def load_history_from_file(self, file_path):
+        # read history from file and populate self.current_session_commands and self.distinct_commands
+        try:
+            with open(file_path, 'r') as f:
+                for line in f:
+                    command = line.strip()
+                    if command and command not in self.distinct_commands:
+                        self.current_session_commands.append(command)
+                        self.distinct_commands.add(command)
+        except FileNotFoundError:
+            pass
+
+    def write_history_to_file(self, file_path):
+        # write self.current_session_commands to file
+        try:
+            with open(file_path, 'w') as f:
+                for command in self.current_session_commands:
+                    f.write(command + '\n')
+        except FileExistsError:
+            pass
+
+    def append_command_to_file(self, file_path):
+        # append current commands to history file
+        try:
+            with open(file_path, 'a') as f:
+                for command in self.current_session_commands:
+                    f.write(command + '\n')
+        except FileExistsError:
+            pass
+        
