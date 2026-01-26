@@ -4,6 +4,8 @@ import subprocess
 import shlex
 import readline
 
+from app.history import History
+
 SINGLE_QUOTE = "'"
 DOUBLE_QUOTE = '"'
 BLANK_STRING = ""
@@ -15,6 +17,7 @@ REDIRECTION_MODE_STDOUT_APPEND = 'stdout_append'
 REDIRECTION_MODE_STDERR_APPEND = 'stderr_append'
 
 commands = []
+history = None
 
 def split_preserve_quotes(s):
     """Split string while preserving quoted content as single elements."""
@@ -47,13 +50,6 @@ def split_preserve_quotes(s):
             elif in_quotes and quote_type == DOUBLE_QUOTE:
                 backslash_escape_inside_double_quotes = True
                 continue
-
-            # if in_quotes and quote_type == DOUBLE_QUOTE:
-            #     backslash_escape_inside_double_quotes = True
-            #     continue
-            # else:
-            #     backslash_escape = True
-            # continue
 
         if char in (SINGLE_QUOTE, DOUBLE_QUOTE):
             if not in_quotes:
@@ -88,7 +84,7 @@ def echo_command(args, return_output=False):
     print(" ".join(args))
 
 def list_builtins_commands():
-    return ["echo", "exit", "type"]
+    return ["echo", "exit", "type", "history"]
 
 def check_is_executable(command):
     paths = os.getenv("PATH", "").split(os.pathsep)
@@ -191,13 +187,10 @@ def text_completion(text, state):
         match = matches[state]
         # Add trailing space ONLY if this is the sole match
         if len(matches) == 1:
-            # print(f"RETURNING: '{match} ' (with space)")
             return match + " "
         else:
-            # print(f"RETURNING: '{match}' (no space, multiple matches)")
             return match
     else:
-        # print("RETURNING: None")
         return None
 
 class PipelineParser:
@@ -293,6 +286,8 @@ def repl_cli():
 
     parts = split_preserve_quotes(prompt)
     command, args = parts[0], parts[1:]
+
+    history.add_to_history(prompt)
     match command:
         # case "echo": 
         # No need to explicitly handle echo here,
@@ -304,6 +299,12 @@ def repl_cli():
         case "type":
             check_command_type(args)
             return
+        case "history":
+            # global history
+            history_commands = history.show_history()
+            for idx, cmd in enumerate(history_commands):
+                print(f"{idx + 1}  {cmd}")
+            return
         case _:
             execute_command(command, args)
             return
@@ -311,7 +312,6 @@ def repl_cli():
 def initializer():
     global commands
     commands = []
-    # commands = list_builtins_commands()
 
     # Add executables from PATH
     paths = os.getenv("PATH", "").split(os.pathsep)
@@ -330,6 +330,9 @@ def main():
     # print(commands)
     readline.set_completer(text_completion) # Set the custom completion function
     readline.parse_and_bind("tab: complete") # Enable tab completion
+
+    global history
+    history = History()
 
     while True:
         repl_cli()
