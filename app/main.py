@@ -301,9 +301,12 @@ def repl_cli():
             return
         case "history":
             # global history
-            history_commands = history.show_history()
-            for idx, cmd in enumerate(history_commands):
-                print(f"{idx + 1}  {cmd}")
+            limit = None
+            if args and args[0].isdigit():
+                limit = int(args[0])
+
+            history.show_history(limit)
+
             return
         case _:
             execute_command(command, args)

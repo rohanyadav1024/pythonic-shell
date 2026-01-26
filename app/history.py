@@ -15,8 +15,16 @@ class History:
         self.distinct_commands.add(command)
         self.current_session_commands.append(command)
 
-    def show_history(self, limit=100):
-        return self.current_session_commands[-limit:]
+    def show_history(self, limit):
+        if limit is None or limit > len(self.current_session_commands):
+            limit = len(self.current_session_commands)
+
+        start_index = len(self.current_session_commands) + 1 - limit
+        history_commands = self.current_session_commands[-limit:]
+
+        # Display with 1-based indexing
+        for idx, cmd in enumerate(history_commands):
+            print(f"{idx + start_index}  {cmd}")
 
     def get_command_from_history(self, index):
         pass
