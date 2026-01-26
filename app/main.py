@@ -235,6 +235,7 @@ def manage_history_command(args):
             
             file_path = args[1]
             history.write_history_to_file(file_path)
+            history.load_history_from_file(file_path)
             return
         elif args[0] == "-a":
             # write history to the file
@@ -244,6 +245,7 @@ def manage_history_command(args):
             
             file_path = args[1]
             history.append_command_to_file(file_path)
+            history.load_history_from_file(file_path)
             return
         elif args[0].isdigit():
             limit = int(args[0])

@@ -33,6 +33,7 @@ class History:
     def load_history_from_file(self, file_path):
         # read history from file and populate self.current_session_commands and self.distinct_commands
         try:
+            # self.clear_history()
             with open(file_path, 'r') as f:
                 for line in f:
                     command = line.strip()
@@ -59,4 +60,9 @@ class History:
                     f.write(command + '\n')
         except FileExistsError:
             pass
-        
+
+    def clear_history(self):
+        self.history_file_commands = []
+        self.current_session_commands = []
+        self.history_command_index = -1
+        self.distinct_commands = set()
