@@ -351,7 +351,7 @@ def repl_cli():
             print(os.getcwd())
             return
         case "cd":
-            if not args:
+            if not args or args[0] == "~":
                 target_directory = os.path.expanduser("~")
             else:
                 target_directory = args[0]

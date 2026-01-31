@@ -11,3 +11,5 @@ pwd
 cd codecrafters-shell-python
 pwd
 exit
+cd ~
+exit
