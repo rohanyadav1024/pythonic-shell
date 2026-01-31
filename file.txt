@@ -1,6 +1,19 @@
-command a
 history
-history -w /Users/rohanyadav/LearnSpace/codecrafters-shell-python/file.txt
-wqjefv
-weofuweg
-history -a /Users/rohanyadav/LearnSpace/codecrafters-shell-python/file.txt
+echo a
+echo b
+history -r file.txt
+already history 1
+already history 2
+echo after calling read_file
+history
+history -w file.txt
+history
+echo a
+echo b
+history -r file.txt
+echo after calling read_file
+history
+history -w file.txt
+history 
+echo before append
+history -a file.txt
