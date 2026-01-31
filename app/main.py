@@ -16,6 +16,8 @@ REDIRECTION_MODE_STDERR = 'stderr'
 REDIRECTION_MODE_STDOUT_APPEND = 'stdout_append'
 REDIRECTION_MODE_STDERR_APPEND = 'stderr_append'
 
+DEFAULT_HISTFILE_PATH = "default_history_file.txt"
+
 commands = []
 history = None
 
@@ -332,7 +334,7 @@ def repl_cli():
             # echo_command(args)
             # return
         case "exit":
-            sys.exit()
+            exit_shell()
         case "type":
             check_command_type(args)
             return
@@ -345,7 +347,7 @@ def repl_cli():
             return
 
 def initializer():
-    global commands
+    global commands, history, HISTFILE_PATH
     commands = []
 
     # Add executables from PATH
@@ -359,15 +361,20 @@ def initializer():
 
     commands = list(set(commands + list_builtins_commands()))
 
+    history = History()
+    HISTFILE_PATH = os.environ.get("HISTFILE", DEFAULT_HISTFILE_PATH)
+    history.load_history_from_file(HISTFILE_PATH)
+
+def exit_shell():
+    history.append_command_to_file(HISTFILE_PATH)
+    sys.exit(0)
+
 def main():
     initializer()
     # print("Welcome to the Python Shell!")
     # print(commands)
     readline.set_completer(text_completion) # Set the custom completion function
     readline.parse_and_bind("tab: complete") # Enable tab completion
-
-    global history
-    history = History()
 
     while True:
         repl_cli()

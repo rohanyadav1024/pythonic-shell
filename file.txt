@@ -1,19 +1,5 @@
-history
-echo a
-echo b
-history -r file.txt
 already history 1
-already history 2
-echo after calling read_file
-history
-history -w file.txt
-history
-echo a
-echo b
-history -r file.txt
-echo after calling read_file
-history
-history -w file.txt
-history 
-echo before append
-history -a file.txt
+already history 2history
+let's close
+echo ohhh ops didn't use echo
+exit
