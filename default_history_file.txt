@@ -1,0 +1,13 @@
+pwd
+type pwd
+cd ..
+cd ./
+history
+type cd
+ls
+exit
+cd ../
+pwd
+cd codecrafters-shell-python
+pwd
+exit

@@ -86,7 +86,7 @@ def echo_command(args, return_output=False):
     print(" ".join(args))
 
 def list_builtins_commands():
-    return ["echo", "exit", "type", "history"]
+    return ["echo", "exit", "type", "history", "cd", "pwd"]
 
 def check_is_executable(command):
     paths = os.getenv("PATH", "").split(os.pathsep)
@@ -315,6 +315,12 @@ def execute_pipeline_commands(prompt: str):
     for process in processes:
         process.wait()
 
+def navigate_directory(target_directory):
+    try:
+        os.chdir(target_directory)
+    except FileNotFoundError:
+        print(f"cd: no such file or directory: {target_directory}")
+
 def repl_cli():
     prompt = read_cli()
 
@@ -340,7 +346,19 @@ def repl_cli():
             return
         case "history":
             manage_history_command(args)
-
+            return
+        case "pwd":
+            print(os.getcwd())
+            return
+        case "cd":
+            if not args:
+                target_directory = os.path.expanduser("~")
+            else:
+                target_directory = args[0]
+            try:
+                os.chdir(target_directory)
+            except FileNotFoundError:
+                print(f"cd: no such file or directory: {target_directory}")
             return
         case _:
             execute_command(command, args)
