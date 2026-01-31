@@ -1,34 +1,68 @@
-[![progress-banner](https://backend.codecrafters.io/progress/shell/0718feac-8699-439c-b80a-0c068eaf0c9d)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Python Shell
 
-This is a starting point for Python solutions to the
-["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+A custom POSIX-compliant shell implementation built in Python. This shell supports interpreting commands, running external programs, and handling builtin commands like `cd`, `pwd`, `echo`, `type`, `history`, and more. It features efficient tab completion using a Trie data structure, command history, input/output redirection, and pipeline execution.
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+## Features
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+- **Command Execution**: Run external programs and builtin commands.
+- **Builtin Commands**: `cd`, `pwd`, `echo`, `type`, `history`, `exit`.
+- **Tab Completion**: Fast autocomplete for commands using a Trie (O(m) complexity).
+- **Command History**: Save and load command history from a file.
+- **Redirection**: Support for `>`, `>>`, `1>`, `2>`, etc.
+- **Pipelines**: Execute commands in pipelines (e.g., `ls | grep py`).
+- **Modular Design**: Clean separation of concerns with dedicated modules for commands, parsing, history, etc.
 
-# Passing the first stage
+## Requirements
 
-The entry point for your `shell` implementation is in `app/main.py`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
+- Python 3.x
+- No external dependencies (uses only standard library)
 
+## Installation
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/python-shell.git
+   cd python-shell
+   ```
+
+2. (Optional) Create a virtual environment:
+   ```sh
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+## Usage
+
+Run the shell:
 ```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+python -m app.main
 ```
 
-Time to move on to the next stage!
+### Example Commands
+- `echo hello world`
+- `pwd`
+- `cd /path/to/dir`
+- `ls | grep .py`
+- `echo test > output.txt`
+- `history` (show command history)
+- `type ls` (check command type)
 
-# Stage 2 & beyond
+Use Tab for autocompletion of commands.
 
-Note: This section is for stages 2 and beyond.
+## Project Structure
 
-1. Ensure you have `uv` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.py`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+- `app/main.py`: Main entry point and REPL loop.
+- `app/commands.py`: Command discovery, execution, and builtins.
+- `app/parser.py`: Input parsing and pipeline validation.
+- `app/pipeline.py`: Pipeline execution.
+- `app/history.py`: Command history management.
+- `app/utils.py`: Utility functions (e.g., tab completion, navigation).
+- `app/command_trie.py`: Trie implementation for efficient autocomplete.
+
+## Contributing
+
+This is a learning project. Feel free to open issues or submit pull requests for improvements!
+
+## License
+
+MIT License

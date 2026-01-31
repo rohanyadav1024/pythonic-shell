@@ -13,3 +13,17 @@ pwd
 exit
 cd ~
 exit
+exit
+echo wgr
+history
+type history
+type ls
+cat file.txt
+echo hello > file.txt
+cat f.t 2>> file.txt
+exit
+exit
+pwd
+exit
+wc hwllo
+exit

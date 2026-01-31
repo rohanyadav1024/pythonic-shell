@@ -1,5 +1,0 @@
-already history 1
-already history 2history
-let's close
-echo ohhh ops didn't use echo
-exit
